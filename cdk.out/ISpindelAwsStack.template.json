@@ -1,0 +1,706 @@
+{
+  "Resources": {
+    "iSpindelB0031278": {
+      "Type": "AWS::DynamoDB::Table",
+      "Properties": {
+        "KeySchema": [
+          {
+            "AttributeName": "pkey0",
+            "KeyType": "HASH"
+          },
+          {
+            "AttributeName": "skey0",
+            "KeyType": "RANGE"
+          }
+        ],
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "pkey0",
+            "AttributeType": "S"
+          },
+          {
+            "AttributeName": "skey0",
+            "AttributeType": "S"
+          },
+          {
+            "AttributeName": "pkey1",
+            "AttributeType": "S"
+          },
+          {
+            "AttributeName": "skey1",
+            "AttributeType": "S"
+          }
+        ],
+        "BillingMode": "PAY_PER_REQUEST",
+        "GlobalSecondaryIndexes": [
+          {
+            "IndexName": "index1",
+            "KeySchema": [
+              {
+                "AttributeName": "pkey1",
+                "KeyType": "HASH"
+              },
+              {
+                "AttributeName": "skey1",
+                "KeyType": "RANGE"
+              }
+            ],
+            "Projection": {
+              "ProjectionType": "ALL"
+            }
+          }
+        ]
+      },
+      "UpdateReplacePolicy": "Retain",
+      "DeletionPolicy": "Retain",
+      "Metadata": {
+        "aws:cdk:path": "ISpindelAwsStack/iSpindel/Resource"
+      }
+    },
+    "AddEventsHandlerServiceRoleB97B6AE9": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+              ]
+            ]
+          }
+        ]
+      },
+      "Metadata": {
+        "aws:cdk:path": "ISpindelAwsStack/AddEventsHandler/ServiceRole/Resource"
+      }
+    },
+    "AddEventsHandlerServiceRoleDefaultPolicy075EBECD": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "dynamodb:BatchGetItem",
+                "dynamodb:GetRecords",
+                "dynamodb:GetShardIterator",
+                "dynamodb:Query",
+                "dynamodb:GetItem",
+                "dynamodb:Scan",
+                "dynamodb:ConditionCheckItem",
+                "dynamodb:BatchWriteItem",
+                "dynamodb:PutItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:DeleteItem"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "iSpindelB0031278",
+                    "Arn"
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "iSpindelB0031278",
+                          "Arn"
+                        ]
+                      },
+                      "/index/*"
+                    ]
+                  ]
+                }
+              ]
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "PolicyName": "AddEventsHandlerServiceRoleDefaultPolicy075EBECD",
+        "Roles": [
+          {
+            "Ref": "AddEventsHandlerServiceRoleB97B6AE9"
+          }
+        ]
+      },
+      "Metadata": {
+        "aws:cdk:path": "ISpindelAwsStack/AddEventsHandler/ServiceRole/DefaultPolicy/Resource"
+      }
+    },
+    "AddEventsHandler36009A81": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "AssetParameters4e24ae3b92adcb03579a989724bfbd97edcdf0de043fe987e3913a7fe078fc5fS3BucketF3650B92"
+          },
+          "S3Key": {
+            "Fn::Join": [
+              "",
+              [
+                {
+                  "Fn::Select": [
+                    0,
+                    {
+                      "Fn::Split": [
+                        "||",
+                        {
+                          "Ref": "AssetParameters4e24ae3b92adcb03579a989724bfbd97edcdf0de043fe987e3913a7fe078fc5fS3VersionKeyC8BE7B59"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "Fn::Select": [
+                    1,
+                    {
+                      "Fn::Split": [
+                        "||",
+                        {
+                          "Ref": "AssetParameters4e24ae3b92adcb03579a989724bfbd97edcdf0de043fe987e3913a7fe078fc5fS3VersionKeyC8BE7B59"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            ]
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "AddEventsHandlerServiceRoleB97B6AE9",
+            "Arn"
+          ]
+        },
+        "Environment": {
+          "Variables": {
+            "TABLE": {
+              "Ref": "iSpindelB0031278"
+            },
+            "AWS_NODEJS_CONNECTION_REUSE_ENABLED": "1"
+          }
+        },
+        "Handler": "index.main",
+        "Runtime": "nodejs14.x"
+      },
+      "DependsOn": [
+        "AddEventsHandlerServiceRoleDefaultPolicy075EBECD",
+        "AddEventsHandlerServiceRoleB97B6AE9"
+      ],
+      "Metadata": {
+        "aws:cdk:path": "ISpindelAwsStack/AddEventsHandler/Resource",
+        "aws:asset:path": "asset.4e24ae3b92adcb03579a989724bfbd97edcdf0de043fe987e3913a7fe078fc5f",
+        "aws:asset:property": "Code"
+      }
+    },
+    "ispindelapiC84E9D84": {
+      "Type": "AWS::ApiGateway::RestApi",
+      "Properties": {
+        "Description": "This service supports the iSpindel.",
+        "Name": "iSpindel Service"
+      },
+      "Metadata": {
+        "aws:cdk:path": "ISpindelAwsStack/ispindel-api/Resource"
+      }
+    },
+    "ispindelapiCloudWatchRoleE5A25CD6": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "apigateway.amazonaws.com"
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
+              ]
+            ]
+          }
+        ]
+      },
+      "Metadata": {
+        "aws:cdk:path": "ISpindelAwsStack/ispindel-api/CloudWatchRole/Resource"
+      }
+    },
+    "ispindelapiAccount2D262009": {
+      "Type": "AWS::ApiGateway::Account",
+      "Properties": {
+        "CloudWatchRoleArn": {
+          "Fn::GetAtt": [
+            "ispindelapiCloudWatchRoleE5A25CD6",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "ispindelapiC84E9D84"
+      ],
+      "Metadata": {
+        "aws:cdk:path": "ISpindelAwsStack/ispindel-api/Account"
+      }
+    },
+    "ispindelapiDeployment89B52C2B831a9879cb75820155cc6b5d79604305": {
+      "Type": "AWS::ApiGateway::Deployment",
+      "Properties": {
+        "RestApiId": {
+          "Ref": "ispindelapiC84E9D84"
+        },
+        "Description": "Automatically created by the RestApi construct"
+      },
+      "DependsOn": [
+        "ispindelapieventsPUT4E147D5D",
+        "ispindelapievents6F134362"
+      ],
+      "Metadata": {
+        "aws:cdk:path": "ISpindelAwsStack/ispindel-api/Deployment/Resource"
+      }
+    },
+    "ispindelapiDeploymentStageprod79041FA5": {
+      "Type": "AWS::ApiGateway::Stage",
+      "Properties": {
+        "RestApiId": {
+          "Ref": "ispindelapiC84E9D84"
+        },
+        "DeploymentId": {
+          "Ref": "ispindelapiDeployment89B52C2B831a9879cb75820155cc6b5d79604305"
+        },
+        "StageName": "prod"
+      },
+      "Metadata": {
+        "aws:cdk:path": "ISpindelAwsStack/ispindel-api/DeploymentStage.prod/Resource"
+      }
+    },
+    "ispindelapievents6F134362": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Fn::GetAtt": [
+            "ispindelapiC84E9D84",
+            "RootResourceId"
+          ]
+        },
+        "PathPart": "events",
+        "RestApiId": {
+          "Ref": "ispindelapiC84E9D84"
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "ISpindelAwsStack/ispindel-api/Default/events/Resource"
+      }
+    },
+    "ispindelapieventsPUTApiPermissionISpindelAwsStackispindelapi7C541E66PUTevents8B6E0FD6": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "AddEventsHandler36009A81",
+            "Arn"
+          ]
+        },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "ispindelapiC84E9D84"
+              },
+              "/",
+              {
+                "Ref": "ispindelapiDeploymentStageprod79041FA5"
+              },
+              "/PUT/events"
+            ]
+          ]
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "ISpindelAwsStack/ispindel-api/Default/events/PUT/ApiPermission.ISpindelAwsStackispindelapi7C541E66.PUT..events"
+      }
+    },
+    "ispindelapieventsPUTApiPermissionTestISpindelAwsStackispindelapi7C541E66PUTeventsC3FB36B0": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "AddEventsHandler36009A81",
+            "Arn"
+          ]
+        },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "ispindelapiC84E9D84"
+              },
+              "/test-invoke-stage/PUT/events"
+            ]
+          ]
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "ISpindelAwsStack/ispindel-api/Default/events/PUT/ApiPermission.Test.ISpindelAwsStackispindelapi7C541E66.PUT..events"
+      }
+    },
+    "ispindelapieventsPUT4E147D5D": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "PUT",
+        "ResourceId": {
+          "Ref": "ispindelapievents6F134362"
+        },
+        "RestApiId": {
+          "Ref": "ispindelapiC84E9D84"
+        },
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "RequestTemplates": {
+            "application/json": "{ \"statusCode\": \"200\" }"
+          },
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "AddEventsHandler36009A81",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "ISpindelAwsStack/ispindel-api/Default/events/PUT/Resource"
+      }
+    },
+    "CDKMetadata": {
+      "Type": "AWS::CDK::Metadata",
+      "Properties": {
+        "Analytics": "v2:deflate64:H4sIAAAAAAAAA1VQQVLDMAx8S++Om1AeQCjDDegEPqDYojiN7Yxl08l4/Hdipy1w0mpnJe2q4U294/XmAc5UCXnaRmEd8vjuQZxYh2SDE8haIvQLd1TmyPbWkHdBeLb/NAdwoNGjy81b8FMo9G1ywYteKq+sSSxfiXI2oK3sefyAfiySAhIbQfcSKmMlDsRfS3kORuRhpkDz2Nl1oNSDHZWYi4uCEqNdBdkq8eL4spDHRXLbk+XotCJaLU3qCB7PMC/bkXw7qUuAK2yFsMF49oTTaGeNpiT80+XHFFcruGZ/BPpt/j3lBf2XlZlaUUqJ5dB8oO13U/O7e95sBlKqcsthpZF3a/0Bf9EiiK8BAAA="
+      },
+      "Metadata": {
+        "aws:cdk:path": "ISpindelAwsStack/CDKMetadata/Default"
+      },
+      "Condition": "CDKMetadataAvailable"
+    }
+  },
+  "Parameters": {
+    "AssetParameters4e24ae3b92adcb03579a989724bfbd97edcdf0de043fe987e3913a7fe078fc5fS3BucketF3650B92": {
+      "Type": "String",
+      "Description": "S3 bucket for asset \"4e24ae3b92adcb03579a989724bfbd97edcdf0de043fe987e3913a7fe078fc5f\""
+    },
+    "AssetParameters4e24ae3b92adcb03579a989724bfbd97edcdf0de043fe987e3913a7fe078fc5fS3VersionKeyC8BE7B59": {
+      "Type": "String",
+      "Description": "S3 key for asset version \"4e24ae3b92adcb03579a989724bfbd97edcdf0de043fe987e3913a7fe078fc5f\""
+    },
+    "AssetParameters4e24ae3b92adcb03579a989724bfbd97edcdf0de043fe987e3913a7fe078fc5fArtifactHashCE74A56A": {
+      "Type": "String",
+      "Description": "Artifact hash for asset \"4e24ae3b92adcb03579a989724bfbd97edcdf0de043fe987e3913a7fe078fc5f\""
+    }
+  },
+  "Outputs": {
+    "ispindelapiEndpoint21BD2DD5": {
+      "Value": {
+        "Fn::Join": [
+          "",
+          [
+            "https://",
+            {
+              "Ref": "ispindelapiC84E9D84"
+            },
+            ".execute-api.",
+            {
+              "Ref": "AWS::Region"
+            },
+            ".",
+            {
+              "Ref": "AWS::URLSuffix"
+            },
+            "/",
+            {
+              "Ref": "ispindelapiDeploymentStageprod79041FA5"
+            },
+            "/"
+          ]
+        ]
+      }
+    }
+  },
+  "Conditions": {
+    "CDKMetadataAvailable": {
+      "Fn::Or": [
+        {
+          "Fn::Or": [
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "AWS::Region"
+                },
+                "af-south-1"
+              ]
+            },
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "AWS::Region"
+                },
+                "ap-east-1"
+              ]
+            },
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "AWS::Region"
+                },
+                "ap-northeast-1"
+              ]
+            },
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "AWS::Region"
+                },
+                "ap-northeast-2"
+              ]
+            },
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "AWS::Region"
+                },
+                "ap-south-1"
+              ]
+            },
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "AWS::Region"
+                },
+                "ap-southeast-1"
+              ]
+            },
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "AWS::Region"
+                },
+                "ap-southeast-2"
+              ]
+            },
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "AWS::Region"
+                },
+                "ca-central-1"
+              ]
+            },
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "AWS::Region"
+                },
+                "cn-north-1"
+              ]
+            },
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "AWS::Region"
+                },
+                "cn-northwest-1"
+              ]
+            }
+          ]
+        },
+        {
+          "Fn::Or": [
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "AWS::Region"
+                },
+                "eu-central-1"
+              ]
+            },
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "AWS::Region"
+                },
+                "eu-north-1"
+              ]
+            },
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "AWS::Region"
+                },
+                "eu-south-1"
+              ]
+            },
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "AWS::Region"
+                },
+                "eu-west-1"
+              ]
+            },
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "AWS::Region"
+                },
+                "eu-west-2"
+              ]
+            },
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "AWS::Region"
+                },
+                "eu-west-3"
+              ]
+            },
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "AWS::Region"
+                },
+                "me-south-1"
+              ]
+            },
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "AWS::Region"
+                },
+                "sa-east-1"
+              ]
+            },
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "AWS::Region"
+                },
+                "us-east-1"
+              ]
+            },
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "AWS::Region"
+                },
+                "us-east-2"
+              ]
+            }
+          ]
+        },
+        {
+          "Fn::Or": [
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "AWS::Region"
+                },
+                "us-west-1"
+              ]
+            },
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "AWS::Region"
+                },
+                "us-west-2"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
